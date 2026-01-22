@@ -1,0 +1,186 @@
+openapi: 3.0.3
+info:
+  title: User Subscriptions Aggregation API
+  version: 1.0.0
+  description: REST-сервис для агрегации данных об онлайн подписках пользователей
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Subscriptions
+
+paths:
+  /api/v1/subscriptions:
+    post:
+      tags: [Subscriptions]
+      summary: Create subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubscriptionRequest"
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+    get:
+      tags: [Subscriptions]
+      summary: List subscriptions
+      parameters:
+        - in: query
+          name: user_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: service_name
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionResponse"
+
+  /api/v1/subscriptions/{id}:
+    get:
+      tags: [Subscriptions]
+      summary: Get subscription by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionResponse"
+        '404':
+          description: Not found
+    put:
+      tags: [Subscriptions]
+      summary: Update subscription by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubscriptionRequest"
+      responses:
+        '204':
+          description: Updated
+        '404':
+          description: Not found
+    delete:
+      tags: [Subscriptions]
+      summary: Delete subscription by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not found
+
+  /api/v1/subscriptions/total:
+    get:
+      tags: [Subscriptions]
+      summary: Total subscription cost for a period
+      parameters:
+        - in: query
+          name: from
+          required: true
+          description: Start month, format MM-YYYY
+          schema: { type: string, pattern: "^[0-1]?[0-9]-[0-9]{4}$" }
+        - in: query
+          name: to
+          required: true
+          description: End month, format MM-YYYY
+          schema: { type: string, pattern: "^[0-1]?[0-9]-[0-9]{4}$" }
+        - in: query
+          name: user_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: service_name
+          schema: { type: string }
+      responses:
+        '200':
+          description: Total cost
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+
+components:
+  schemas:
+    CreateSubscriptionRequest:
+      type: object
+      required: [service_name, price, user_id, start_date]
+      properties:
+        service_name: { type: string }
+        price: { type: integer, minimum: 0 }
+        user_id: { type: string, format: uuid }
+        start_date:
+          type: string
+          description: Month-Year, format MM-YYYY
+          example: "07-2025"
+    UpdateSubscriptionRequest:
+      type: object
+      required: [service_name, price, user_id, start_date]
+      properties:
+        service_name: { type: string }
+        price: { type: integer, minimum: 0 }
+        user_id: { type: string, format: uuid }
+        start_date:
+          type: string
+          description: Month-Year, format MM-YYYY
+          example: "07-2025"
+        end_date:
+          type: string
+          nullable: true
+          description: Month-Year, format MM-YYYY
+          example: "12-2025"
+    SubscriptionResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        service_name: { type: string }
+        price: { type: integer }
+        start_date:
+          type: string
+          description: Month-Year, format MM-YYYY
+          example: "07-2025"
+        end_date:
+          type: string
+          nullable: true
+          description: Month-Year, format MM-YYYY
+          example: "12-2025"

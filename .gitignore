@@ -1,0 +1,23 @@
+# Binaries
+/bin
+/main
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Environment variables
+.env
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Vendor (если не хочешь хранить зависимости в репозитории)
+vendor/
